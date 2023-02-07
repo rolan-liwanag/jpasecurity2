@@ -2,6 +2,7 @@ package com.rliwanag.jpasecurity2.service;
 
 import com.rliwanag.jpasecurity2.model.User;
 import com.rliwanag.jpasecurity2.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -13,9 +14,12 @@ import java.util.Optional;
 public class UserService {
 
     UserRepository userRepository;
+    PasswordEncoder encoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PasswordEncoder encoder) {
+
         this.userRepository = userRepository;
+        this.encoder = encoder;
     }
 
     public Optional<User> findUserByUsername(String username) {
@@ -35,6 +39,7 @@ public class UserService {
     public void createUser(User user) throws Exception {
         if(this.userRepository.findByUsername(user.getUsername()).isEmpty()
                 && this.userRepository.findByFirstnameAndLastname(user.getFirstname(), user.getLastname()).isEmpty()) {
+            user.setPassword(encoder.encode(user.getPassword()));
             this.userRepository.save(user);
         } else {
             throw new Exception("The username should be unique. The firstname and lastname combination should also be unique.");
